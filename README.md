@@ -940,20 +940,13 @@ StockSense demonstrates practical understanding of:
 
 # 📸 Screenshots
 
-Add screenshots of the actual application here.
 
-Recommended screenshots:
-
-```text
-docs/
-├── dashboard.png
-├── products.png
-├── product-search.png
-├── inventory.png
-├── warehouse.png
-├── transfer.png
-└── adjustment.png
-```
+![alt text](Frontend/public/sign.png)
+![alt text](Frontend/public/addpro.png)
+![alt text](Frontend/public/dahjsh.png)
+![alt text](Frontend/public/del.png)
+![alt text](Frontend/public/products.png)
+![alt text](Frontend/public/receipts.png)
 
 Example:
 
