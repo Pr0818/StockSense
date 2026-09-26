@@ -80,6 +80,14 @@ const stockMovements = [
   }
 ]
 
+const emptyProduct = {
+  name: "",
+  sku: "",
+  category: "",
+  stock: "",
+  reorderLevel: ""
+}
+
 function App() {
   const [products, setProducts] = useState(initialProducts)
 
@@ -92,16 +100,14 @@ function App() {
   const [productSearch, setProductSearch] =
     useState("")
 
-  const [showAddProduct, setShowAddProduct] =
+  const [showProductModal, setShowProductModal] =
     useState(false)
 
-  const [newProduct, setNewProduct] = useState({
-    name: "",
-    sku: "",
-    category: "",
-    stock: "",
-    reorderLevel: ""
-  })
+  const [editingProductId, setEditingProductId] =
+    useState(null)
+
+  const [productForm, setProductForm] =
+    useState(emptyProduct)
 
   const totalProducts = products.length
 
@@ -115,50 +121,68 @@ function App() {
   ).length
 
   const filteredProducts = products.filter(product =>
-    product.name
-      .toLowerCase()
-      .includes(productSearch.toLowerCase()) ||
-
-    product.sku
-      .toLowerCase()
-      .includes(productSearch.toLowerCase()) ||
-
-    product.category
-      .toLowerCase()
-      .includes(productSearch.toLowerCase())
+    product.name.toLowerCase().includes(productSearch.toLowerCase()) ||
+    product.sku.toLowerCase().includes(productSearch.toLowerCase()) ||
+    product.category.toLowerCase().includes(productSearch.toLowerCase())
   )
 
   const lowStockProducts = products.filter(
     product => product.stock <= product.reorderLevel
   )
 
-  const handleAddProduct = (event) => {
+  const openAddProductModal = () => {
+    setEditingProductId(null)
+    setProductForm(emptyProduct)
+    setShowProductModal(true)
+  }
+
+  const openEditProductModal = (product) => {
+    setEditingProductId(product.id)
+
+    setProductForm({
+      name: product.name,
+      sku: product.sku,
+      category: product.category,
+      stock: String(product.stock),
+      reorderLevel: String(product.reorderLevel)
+    })
+
+    setShowProductModal(true)
+  }
+
+  const closeProductModal = () => {
+    setShowProductModal(false)
+    setEditingProductId(null)
+    setProductForm(emptyProduct)
+  }
+
+  const handleProductSubmit = (event) => {
     event.preventDefault()
 
     if (
-      !newProduct.name.trim() ||
-      !newProduct.sku.trim() ||
-      !newProduct.category.trim() ||
-      newProduct.stock === "" ||
-      newProduct.reorderLevel === ""
+      !productForm.name.trim() ||
+      !productForm.sku.trim() ||
+      !productForm.category.trim() ||
+      productForm.stock === "" ||
+      productForm.reorderLevel === ""
     ) {
       alert("Please fill in all product fields.")
       return
     }
 
-    const stock = Number(newProduct.stock)
-    const reorderLevel = Number(newProduct.reorderLevel)
+    const stock = Number(productForm.stock)
+    const reorderLevel = Number(productForm.reorderLevel)
 
     if (stock < 0 || reorderLevel < 0) {
       alert("Stock and reorder level cannot be negative.")
       return
     }
 
-    const product = {
-      id: Date.now(),
-      name: newProduct.name.trim(),
-      sku: newProduct.sku.trim(),
-      category: newProduct.category.trim(),
+    const updatedProduct = {
+      id: editingProductId ?? Date.now(),
+      name: productForm.name.trim(),
+      sku: productForm.sku.trim(),
+      category: productForm.category.trim(),
       stock,
       reorderLevel,
       status: stock <= reorderLevel
@@ -166,32 +190,46 @@ function App() {
         : "In Stock"
     }
 
-    setProducts(previousProducts => [
-      ...previousProducts,
-      product
-    ])
+    if (editingProductId !== null) {
+      setProducts(previousProducts =>
+        previousProducts.map(product =>
+          product.id === editingProductId
+            ? updatedProduct
+            : product
+        )
+      )
+    } else {
+      setProducts(previousProducts => [
+        ...previousProducts,
+        updatedProduct
+      ])
+    }
 
-    setNewProduct({
-      name: "",
-      sku: "",
-      category: "",
-      stock: "",
-      reorderLevel: ""
-    })
-
-    setShowAddProduct(false)
+    closeProductModal()
   }
 
-  const handleCancelAddProduct = () => {
-    setNewProduct({
-      name: "",
-      sku: "",
-      category: "",
-      stock: "",
-      reorderLevel: ""
-    })
+  const handleDeleteProduct = (productId) => {
+    const product = products.find(
+      product => product.id === productId
+    )
 
-    setShowAddProduct(false)
+    if (!product) {
+      return
+    }
+
+    const confirmed = window.confirm(
+      `Are you sure you want to delete "${product.name}"?`
+    )
+
+    if (!confirmed) {
+      return
+    }
+
+    setProducts(previousProducts =>
+      previousProducts.filter(product =>
+        product.id !== productId
+      )
+    )
   }
 
   return (
@@ -387,7 +425,7 @@ function App() {
 
                 <button
                   className="add-product-button"
-                  onClick={() => setShowAddProduct(true)}
+                  onClick={openAddProductModal}
                 >
                   + Add Product
                 </button>
@@ -402,25 +440,12 @@ function App() {
 
                 <div className="product-row product-header">
 
-                  <span>
-                    Product
-                  </span>
-
-                  <span>
-                    SKU
-                  </span>
-
-                  <span>
-                    Category
-                  </span>
-
-                  <span>
-                    Stock
-                  </span>
-
-                  <span>
-                    Status
-                  </span>
+                  <span>Product</span>
+                  <span>SKU</span>
+                  <span>Category</span>
+                  <span>Stock</span>
+                  <span>Status</span>
+                  <span>Actions</span>
 
                 </div>
 
@@ -459,6 +484,28 @@ function App() {
                         : "In Stock"}
                     </span>
 
+                    <div className="product-actions">
+
+                      <button
+                        className="edit-product-button"
+                        onClick={() =>
+                          openEditProductModal(product)
+                        }
+                      >
+                        Edit
+                      </button>
+
+                      <button
+                        className="delete-product-button"
+                        onClick={() =>
+                          handleDeleteProduct(product.id)
+                        }
+                      >
+                        Delete
+                      </button>
+
+                    </div>
+
                   </div>
 
                 ))}
@@ -491,7 +538,6 @@ function App() {
           /* Dashboard */
           <section className="dashboard">
 
-            {/* Welcome Section */}
             <div className="welcome">
 
               <div>
@@ -513,7 +559,6 @@ function App() {
 
             </div>
 
-            {/* KPI Cards */}
             <div className="stats-grid">
 
               <div className="stat-card">
@@ -582,10 +627,8 @@ function App() {
 
             </div>
 
-            {/* Bottom Sections */}
             <div className="content-grid">
 
-              {/* Recent Stock Movements */}
               <div className="panel">
 
                 <div className="panel-header">
@@ -648,7 +691,6 @@ function App() {
 
               </div>
 
-              {/* Low Stock */}
               <div className="panel">
 
                 <div className="panel-header">
@@ -708,17 +750,19 @@ function App() {
 
       </main>
 
-      {/* Add Product Modal */}
-      {showAddProduct && (
+      {/* Add / Edit Product Modal */}
+      {showProductModal && (
 
         <div
           className="modal-overlay"
-          onClick={handleCancelAddProduct}
+          onClick={closeProductModal}
         >
 
           <div
             className="product-modal"
-            onClick={(event) => event.stopPropagation()}
+            onClick={(event) =>
+              event.stopPropagation()
+            }
           >
 
             <div className="modal-header">
@@ -730,21 +774,24 @@ function App() {
                 </p>
 
                 <h2>
-                  Add Product
+                  {editingProductId !== null
+                    ? "Edit Product"
+                    : "Add Product"}
                 </h2>
 
               </div>
 
               <button
+                type="button"
                 className="modal-close"
-                onClick={handleCancelAddProduct}
+                onClick={closeProductModal}
               >
                 ×
               </button>
 
             </div>
 
-            <form onSubmit={handleAddProduct}>
+            <form onSubmit={handleProductSubmit}>
 
               <div className="form-group">
 
@@ -755,10 +802,10 @@ function App() {
                 <input
                   type="text"
                   placeholder="e.g. Wireless Headphones"
-                  value={newProduct.name}
+                  value={productForm.name}
                   onChange={(event) =>
-                    setNewProduct({
-                      ...newProduct,
+                    setProductForm({
+                      ...productForm,
                       name: event.target.value
                     })
                   }
@@ -775,10 +822,10 @@ function App() {
                 <input
                   type="text"
                   placeholder="e.g. WH-006"
-                  value={newProduct.sku}
+                  value={productForm.sku}
                   onChange={(event) =>
-                    setNewProduct({
-                      ...newProduct,
+                    setProductForm({
+                      ...productForm,
                       sku: event.target.value
                     })
                   }
@@ -795,10 +842,10 @@ function App() {
                 <input
                   type="text"
                   placeholder="e.g. Electronics"
-                  value={newProduct.category}
+                  value={productForm.category}
                   onChange={(event) =>
-                    setNewProduct({
-                      ...newProduct,
+                    setProductForm({
+                      ...productForm,
                       category: event.target.value
                     })
                   }
@@ -818,10 +865,10 @@ function App() {
                     type="number"
                     min="0"
                     placeholder="0"
-                    value={newProduct.stock}
+                    value={productForm.stock}
                     onChange={(event) =>
-                      setNewProduct({
-                        ...newProduct,
+                      setProductForm({
+                        ...productForm,
                         stock: event.target.value
                       })
                     }
@@ -839,10 +886,10 @@ function App() {
                     type="number"
                     min="0"
                     placeholder="0"
-                    value={newProduct.reorderLevel}
+                    value={productForm.reorderLevel}
                     onChange={(event) =>
-                      setNewProduct({
-                        ...newProduct,
+                      setProductForm({
+                        ...productForm,
                         reorderLevel: event.target.value
                       })
                     }
@@ -857,7 +904,7 @@ function App() {
                 <button
                   type="button"
                   className="cancel-button"
-                  onClick={handleCancelAddProduct}
+                  onClick={closeProductModal}
                 >
                   Cancel
                 </button>
@@ -866,7 +913,9 @@ function App() {
                   type="submit"
                   className="add-product-button"
                 >
-                  Add Product
+                  {editingProductId !== null
+                    ? "Save Changes"
+                    : "Add Product"}
                 </button>
 
               </div>
