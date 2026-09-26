@@ -948,11 +948,6 @@ StockSense demonstrates practical understanding of:
 ![alt text](Frontend/public/products.png)
 ![alt text](Frontend/public/receipts.png)
 
-Example:
-
-```markdown
-![StockSense Dashboard](docs/dashboard.png)
-```
 
 ---
 
