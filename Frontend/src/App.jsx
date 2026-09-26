@@ -94,6 +94,18 @@ const lowStock = products.filter(
 function App() {
   const [selectedWarehouse, setSelectedWarehouse] = useState("Main Warehouse")
   const [activePage, setActivePage] = useState("Dashboard")
+  const [productSearch, setProductSearch] = useState("")
+
+  const filteredProducts = products.filter(product =>
+    product.name.toLowerCase().includes(productSearch.toLowerCase()) ||
+    product.sku.toLowerCase().includes(productSearch.toLowerCase()) ||
+    product.category.toLowerCase().includes(productSearch.toLowerCase())
+  )
+
+  const lowStockProducts = products.filter(
+    product => product.stock <= product.reorderLevel
+  )
+
   return (
     <div className="app">
 
@@ -111,21 +123,25 @@ function App() {
             <p className="nav-title">MAIN</p>
 
             <button
-  className={`nav-item ${activePage === "Dashboard" ? "active" : ""}`}
-  onClick={() => setActivePage("Dashboard")}
->
-  <span>▦</span>
-  Dashboard
-</button>
+              className={`nav-item ${
+                activePage === "Dashboard" ? "active" : ""
+              }`}
+              onClick={() => setActivePage("Dashboard")}
+            >
+              <span>▦</span>
+              Dashboard
+            </button>
 
             <button
-  className={`nav-item ${activePage === "Products" ? "active" : ""}`}
-  onClick={() => setActivePage("Products")}
->
-  <span>□</span>
-  Products
-</button>
-</div>
+              className={`nav-item ${
+                activePage === "Products" ? "active" : ""
+              }`}
+              onClick={() => setActivePage("Products")}
+            >
+              <span>□</span>
+              Products
+            </button>
+          </div>
 
           <div className="nav-section">
             <p className="nav-title">OPERATIONS</p>
@@ -187,251 +203,312 @@ function App() {
         <header className="topbar">
 
           <div>
-            <p className="breadcrumb">Overview</p>
-            <h1>Dashboard</h1>
+            <p className="breadcrumb">
+              {activePage === "Products" ? "Inventory" : "Overview"}
+            </p>
+
+            <h1>
+              {activePage === "Products" ? "Products" : "Dashboard"}
+            </h1>
           </div>
 
           <div className="warehouse">
-  <span>Warehouse</span>
+            <span>Warehouse</span>
 
-  <select
-    value={selectedWarehouse}
-    onChange={(event) => setSelectedWarehouse(event.target.value)}
-  >
-    <option value="Main Warehouse">Main Warehouse</option>
-    <option value="Warehouse 2">Warehouse 2</option>
-    <option value="Warehouse 3">Warehouse 3</option>
-  </select>
-</div>
-
-        </header>
-       {activePage === "Products" ? (
-  <section className="products-page">
-
-    <div className="page-header">
-      <div>
-        <p className="eyebrow">INVENTORY</p>
-        <h2>Products</h2>
-        <p>View and manage your inventory products.</p>
-      </div>
-    </div>
-
-    <div className="panel products-panel">
-
-      <div className="products-table">
-
-        <div className="product-row product-header">
-          <span>Product</span>
-          <span>SKU</span>
-          <span>Category</span>
-          <span>Stock</span>
-          <span>Status</span>
-        </div>
-
-        {products.map(product => (
-          <div className="product-row" key={product.id}>
-
-            <strong>{product.name}</strong>
-
-            <span>{product.sku}</span>
-
-            <span>{product.category}</span>
-
-            <span>{product.stock}</span>
-
-            <span
-              className={
-                product.stock <= product.reorderLevel
-                  ? "status-low"
-                  : "status-in-stock"
+            <select
+              value={selectedWarehouse}
+              onChange={(event) =>
+                setSelectedWarehouse(event.target.value)
               }
             >
-              {product.stock <= product.reorderLevel
-                ? "Low Stock"
-                : "In Stock"}
-            </span>
+              <option value="Main Warehouse">
+                Main Warehouse
+              </option>
 
-          </div>
-        ))}
+              <option value="Warehouse 2">
+                Warehouse 2
+              </option>
 
-      </div>
-
-    </div>
-
-  </section>
-) : (
-  <section className="dashboard">
-
-          {/* Welcome Section */}
-          <div className="welcome">
-
-            <div>
-              <p className="eyebrow">
-                INVENTORY OVERVIEW
-              </p>
-
-              <h2>
-                Welcome to StockSense
-              </h2>
-
-              <p>
-                Monitor your inventory, stock movements and warehouse
-                operations from one place.
-              </p>
-            </div>
-
+              <option value="Warehouse 3">
+                Warehouse 3
+              </option>
+            </select>
           </div>
 
-          {/* KPI Cards */}
-          <div className="stats-grid">
+        </header>
 
-            <div className="stat-card">
-              <span className="stat-label">
-                Total Products
-              </span>
+        {/* Products Page */}
+        {activePage === "Products" ? (
 
-              <strong>
-                {totalProducts}
-              </strong>
+          <section className="products-page">
 
-              <small>
-                Products in inventory
-              </small>
-            </div>
+            <div className="page-header">
 
-            <div className="stat-card">
-              <span className="stat-label">
-                Total Stock
-              </span>
+              <div>
+                <p className="eyebrow">
+                  INVENTORY
+                </p>
 
-              <strong>
-                {totalStock}
-              </strong>
+                <h2>
+                  Products
+                </h2>
 
-              <small>
-                Units available
-              </small>
-            </div>
-
-            <div className="stat-card">
-              <span className="stat-label">
-                Low Stock
-              </span>
-
-              <strong>
-                {lowStock}
-              </strong>
-
-              <small>
-                Products need attention
-              </small>
-            </div>
-
-            <div className="stat-card">
-              <span className="stat-label">
-                Stock Movements
-              </span>
-
-              <strong>
-                {stockMovements.length}
-              </strong>
-
-              <small>
-                Recent movements
-              </small>
-            </div>
-
-          </div>
-
-          {/* Bottom Sections */}
-          <div className="content-grid">
-
-            {/* Recent Stock Movements */}
-            <div className="panel">
-
-              <div className="panel-header">
-
-                <div>
-                  <p className="eyebrow">
-                    RECENT ACTIVITY
-                  </p>
-
-                  <h3>
-                    Recent Stock Movements
-                  </h3>
-                </div>
-
-                <button className="view-button">
-                  View all
-                </button>
-
+                <p>
+                  View and manage your inventory products.
+                </p>
               </div>
 
-              <div className="movement-list">
+              <input
+                type="text"
+                className="product-search"
+                placeholder="Search products..."
+                value={productSearch}
+                onChange={(event) =>
+                  setProductSearch(event.target.value)
+                }
+              />
 
-                {stockMovements.map(movement => (
+            </div>
+
+            <div className="panel products-panel">
+
+              <div className="products-table">
+
+                <div className="product-row product-header">
+                  <span>Product</span>
+                  <span>SKU</span>
+                  <span>Category</span>
+                  <span>Stock</span>
+                  <span>Status</span>
+                </div>
+
+                {filteredProducts.map(product => (
 
                   <div
-                    className="movement-item"
-                    key={movement.id}
+                    className="product-row"
+                    key={product.id}
                   >
 
-                    <div className="movement-info">
+                    <strong>
+                      {product.name}
+                    </strong>
 
-                      <strong>
-                        {movement.product}
-                      </strong>
+                    <span>
+                      {product.sku}
+                    </span>
 
-                      <small>
-                        {movement.type} · {movement.date}
-                      </small>
+                    <span>
+                      {product.category}
+                    </span>
 
-                    </div>
+                    <span>
+                      {product.stock}
+                    </span>
 
                     <span
                       className={
-                        movement.quantity > 0
-                          ? "movement-positive"
-                          : "movement-negative"
+                        product.stock <= product.reorderLevel
+                          ? "status-low"
+                          : "status-in-stock"
                       }
                     >
-                      {movement.quantity > 0 ? "+" : ""}
-                      {movement.quantity} units
+                      {product.stock <= product.reorderLevel
+                        ? "Low Stock"
+                        : "In Stock"}
                     </span>
 
                   </div>
 
                 ))}
 
+                {filteredProducts.length === 0 && (
+                  <div className="empty-state">
+                    <h4>
+                      No products found
+                    </h4>
+
+                    <p>
+                      Try searching for a different product, SKU, or category.
+                    </p>
+                  </div>
+                )}
+
               </div>
 
             </div>
 
-            {/* Low Stock */}
-            <div className="panel">
+          </section>
 
-              <div className="panel-header">
+        ) : (
 
-                <div>
-                  <p className="eyebrow">
-                    ALERTS
-                  </p>
+          /* Dashboard */
+          <section className="dashboard">
 
-                  <h3>
-                    Low Stock
-                  </h3>
+            {/* Welcome Section */}
+            <div className="welcome">
+
+              <div>
+                <p className="eyebrow">
+                  INVENTORY OVERVIEW
+                </p>
+
+                <h2>
+                  Welcome to StockSense
+                </h2>
+
+                <p>
+                  Monitor your inventory, stock movements and warehouse
+                  operations from one place.
+                </p>
+              </div>
+
+            </div>
+
+            {/* KPI Cards */}
+            <div className="stats-grid">
+
+              <div className="stat-card">
+                <span className="stat-label">
+                  Total Products
+                </span>
+
+                <strong>
+                  {totalProducts}
+                </strong>
+
+                <small>
+                  Products in inventory
+                </small>
+              </div>
+
+              <div className="stat-card">
+                <span className="stat-label">
+                  Total Stock
+                </span>
+
+                <strong>
+                  {totalStock}
+                </strong>
+
+                <small>
+                  Units available
+                </small>
+              </div>
+
+              <div className="stat-card">
+                <span className="stat-label">
+                  Low Stock
+                </span>
+
+                <strong>
+                  {lowStock}
+                </strong>
+
+                <small>
+                  Products need attention
+                </small>
+              </div>
+
+              <div className="stat-card">
+                <span className="stat-label">
+                  Stock Movements
+                </span>
+
+                <strong>
+                  {stockMovements.length}
+                </strong>
+
+                <small>
+                  Recent movements
+                </small>
+              </div>
+
+            </div>
+
+            {/* Bottom Sections */}
+            <div className="content-grid">
+
+              {/* Recent Stock Movements */}
+              <div className="panel">
+
+                <div className="panel-header">
+
+                  <div>
+                    <p className="eyebrow">
+                      RECENT ACTIVITY
+                    </p>
+
+                    <h3>
+                      Recent Stock Movements
+                    </h3>
+                  </div>
+
+                  <button className="view-button">
+                    View all
+                  </button>
+
+                </div>
+
+                <div className="movement-list">
+
+                  {stockMovements.map(movement => (
+
+                    <div
+                      className="movement-item"
+                      key={movement.id}
+                    >
+
+                      <div className="movement-info">
+
+                        <strong>
+                          {movement.product}
+                        </strong>
+
+                        <small>
+                          {movement.type} · {movement.date}
+                        </small>
+
+                      </div>
+
+                      <span
+                        className={
+                          movement.quantity > 0
+                            ? "movement-positive"
+                            : "movement-negative"
+                        }
+                      >
+                        {movement.quantity > 0 ? "+" : ""}
+                        {movement.quantity} units
+                      </span>
+
+                    </div>
+
+                  ))}
+
                 </div>
 
               </div>
 
-              <div className="low-stock-list">
+              {/* Low Stock */}
+              <div className="panel">
 
-                {products
-                  .filter(
-                    product =>
-                      product.stock <= product.reorderLevel
-                  )
-                  .map(product => (
+                <div className="panel-header">
+
+                  <div>
+                    <p className="eyebrow">
+                      ALERTS
+                    </p>
+
+                    <h3>
+                      Low Stock
+                    </h3>
+                  </div>
+
+                </div>
+
+                <div className="low-stock-list">
+
+                  {lowStockProducts.map(product => (
 
                     <div
                       className="low-stock-item"
@@ -458,15 +535,17 @@ function App() {
 
                   ))}
 
+                </div>
+
               </div>
 
             </div>
 
-          </div>
+          </section>
 
-        </section>
-)}
-</main>
+        )}
+
+      </main>
 
     </div>
   )
