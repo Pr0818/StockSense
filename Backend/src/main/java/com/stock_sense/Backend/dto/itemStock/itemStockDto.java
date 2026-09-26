@@ -13,6 +13,8 @@ public class itemStockDto {
 
     private Long quantity;
 
+    private Long minQuantity;
+
     private Store store;
 
     private Item item;

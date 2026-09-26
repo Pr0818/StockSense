@@ -32,4 +32,7 @@ public class Item {
     @Column(nullable = false)
     private String itemUnit;
 
+    @Column(nullable = false)
+    private Boolean isActive = true;
+
 }

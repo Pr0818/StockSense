@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
+@Table(uniqueConstraints = @UniqueConstraint(columnNames = {"item_id", "store_id"}))
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -17,6 +18,12 @@ public class ItemStock {
 
     @Column(nullable = false)
     private Long quantity;
+
+    @Column(nullable = false)
+    private Long minQuantity;
+
+    @Version
+    private Long version;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "store_id",nullable = false)
