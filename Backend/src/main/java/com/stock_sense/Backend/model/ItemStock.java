@@ -18,4 +18,12 @@ public class ItemStock {
     @Column(nullable = false)
     private Long quantity;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "store_id",nullable = false)
+    private Store store;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="item_id",nullable = false)
+    private Item item;
+
 }
