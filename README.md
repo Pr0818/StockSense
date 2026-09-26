@@ -992,8 +992,6 @@ Then open a Pull Request.
 
 This project is currently developed as a collaborative/hackathon project.
 
-Add an appropriate open-source license if the project is intended for public distribution.
-
 ---
 
 # 👨‍💻 Contributors
