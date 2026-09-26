@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import './App.css'
 
 const products = [
@@ -91,6 +92,8 @@ const lowStock = products.filter(
 ).length
 
 function App() {
+  const [selectedWarehouse, setSelectedWarehouse] = useState("Main Warehouse")
+  const [activePage, setActivePage] = useState("Dashboard")
   return (
     <div className="app">
 
@@ -107,16 +110,22 @@ function App() {
           <div className="nav-section">
             <p className="nav-title">MAIN</p>
 
-            <button className="nav-item active">
-              <span>▦</span>
-              Dashboard
-            </button>
+            <button
+  className={`nav-item ${activePage === "Dashboard" ? "active" : ""}`}
+  onClick={() => setActivePage("Dashboard")}
+>
+  <span>▦</span>
+  Dashboard
+</button>
 
-            <button className="nav-item">
-              <span>□</span>
-              Products
-            </button>
-          </div>
+            <button
+  className={`nav-item ${activePage === "Products" ? "active" : ""}`}
+  onClick={() => setActivePage("Products")}
+>
+  <span>□</span>
+  Products
+</button>
+</div>
 
           <div className="nav-section">
             <p className="nav-title">OPERATIONS</p>
@@ -183,13 +192,75 @@ function App() {
           </div>
 
           <div className="warehouse">
-            <span>Warehouse</span>
-            <strong>Main Warehouse ▾</strong>
-          </div>
+  <span>Warehouse</span>
+
+  <select
+    value={selectedWarehouse}
+    onChange={(event) => setSelectedWarehouse(event.target.value)}
+  >
+    <option value="Main Warehouse">Main Warehouse</option>
+    <option value="Warehouse 2">Warehouse 2</option>
+    <option value="Warehouse 3">Warehouse 3</option>
+  </select>
+</div>
 
         </header>
+       {activePage === "Products" ? (
+  <section className="products-page">
 
-        <section className="dashboard">
+    <div className="page-header">
+      <div>
+        <p className="eyebrow">INVENTORY</p>
+        <h2>Products</h2>
+        <p>View and manage your inventory products.</p>
+      </div>
+    </div>
+
+    <div className="panel products-panel">
+
+      <div className="products-table">
+
+        <div className="product-row product-header">
+          <span>Product</span>
+          <span>SKU</span>
+          <span>Category</span>
+          <span>Stock</span>
+          <span>Status</span>
+        </div>
+
+        {products.map(product => (
+          <div className="product-row" key={product.id}>
+
+            <strong>{product.name}</strong>
+
+            <span>{product.sku}</span>
+
+            <span>{product.category}</span>
+
+            <span>{product.stock}</span>
+
+            <span
+              className={
+                product.stock <= product.reorderLevel
+                  ? "status-low"
+                  : "status-in-stock"
+              }
+            >
+              {product.stock <= product.reorderLevel
+                ? "Low Stock"
+                : "In Stock"}
+            </span>
+
+          </div>
+        ))}
+
+      </div>
+
+    </div>
+
+  </section>
+) : (
+  <section className="dashboard">
 
           {/* Welcome Section */}
           <div className="welcome">
@@ -394,8 +465,8 @@ function App() {
           </div>
 
         </section>
-
-      </main>
+)}
+</main>
 
     </div>
   )
