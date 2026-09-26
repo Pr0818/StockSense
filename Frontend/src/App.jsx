@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import './App.css'
 
-const products = [
+const initialProducts = [
   {
     id: 1,
     name: "Laptop",
@@ -80,31 +80,119 @@ const stockMovements = [
   }
 ]
 
-const totalProducts = products.length
-
-const totalStock = products.reduce(
-  (total, product) => total + product.stock,
-  0
-)
-
-const lowStock = products.filter(
-  product => product.stock <= product.reorderLevel
-).length
-
 function App() {
-  const [selectedWarehouse, setSelectedWarehouse] = useState("Main Warehouse")
-  const [activePage, setActivePage] = useState("Dashboard")
-  const [productSearch, setProductSearch] = useState("")
+  const [products, setProducts] = useState(initialProducts)
+
+  const [selectedWarehouse, setSelectedWarehouse] =
+    useState("Main Warehouse")
+
+  const [activePage, setActivePage] =
+    useState("Dashboard")
+
+  const [productSearch, setProductSearch] =
+    useState("")
+
+  const [showAddProduct, setShowAddProduct] =
+    useState(false)
+
+  const [newProduct, setNewProduct] = useState({
+    name: "",
+    sku: "",
+    category: "",
+    stock: "",
+    reorderLevel: ""
+  })
+
+  const totalProducts = products.length
+
+  const totalStock = products.reduce(
+    (total, product) => total + product.stock,
+    0
+  )
+
+  const lowStock = products.filter(
+    product => product.stock <= product.reorderLevel
+  ).length
 
   const filteredProducts = products.filter(product =>
-    product.name.toLowerCase().includes(productSearch.toLowerCase()) ||
-    product.sku.toLowerCase().includes(productSearch.toLowerCase()) ||
-    product.category.toLowerCase().includes(productSearch.toLowerCase())
+    product.name
+      .toLowerCase()
+      .includes(productSearch.toLowerCase()) ||
+
+    product.sku
+      .toLowerCase()
+      .includes(productSearch.toLowerCase()) ||
+
+    product.category
+      .toLowerCase()
+      .includes(productSearch.toLowerCase())
   )
 
   const lowStockProducts = products.filter(
     product => product.stock <= product.reorderLevel
   )
+
+  const handleAddProduct = (event) => {
+    event.preventDefault()
+
+    if (
+      !newProduct.name.trim() ||
+      !newProduct.sku.trim() ||
+      !newProduct.category.trim() ||
+      newProduct.stock === "" ||
+      newProduct.reorderLevel === ""
+    ) {
+      alert("Please fill in all product fields.")
+      return
+    }
+
+    const stock = Number(newProduct.stock)
+    const reorderLevel = Number(newProduct.reorderLevel)
+
+    if (stock < 0 || reorderLevel < 0) {
+      alert("Stock and reorder level cannot be negative.")
+      return
+    }
+
+    const product = {
+      id: Date.now(),
+      name: newProduct.name.trim(),
+      sku: newProduct.sku.trim(),
+      category: newProduct.category.trim(),
+      stock,
+      reorderLevel,
+      status: stock <= reorderLevel
+        ? "Low Stock"
+        : "In Stock"
+    }
+
+    setProducts(previousProducts => [
+      ...previousProducts,
+      product
+    ])
+
+    setNewProduct({
+      name: "",
+      sku: "",
+      category: "",
+      stock: "",
+      reorderLevel: ""
+    })
+
+    setShowAddProduct(false)
+  }
+
+  const handleCancelAddProduct = () => {
+    setNewProduct({
+      name: "",
+      sku: "",
+      category: "",
+      stock: "",
+      reorderLevel: ""
+    })
+
+    setShowAddProduct(false)
+  }
 
   return (
     <div className="app">
@@ -120,6 +208,7 @@ function App() {
         <nav className="navigation">
 
           <div className="nav-section">
+
             <p className="nav-title">MAIN</p>
 
             <button
@@ -141,9 +230,11 @@ function App() {
               <span>□</span>
               Products
             </button>
+
           </div>
 
           <div className="nav-section">
+
             <p className="nav-title">OPERATIONS</p>
 
             <button className="nav-item">
@@ -165,15 +256,18 @@ function App() {
               <span>±</span>
               Inventory Adjustment
             </button>
+
           </div>
 
           <div className="nav-section">
+
             <p className="nav-title">SYSTEM</p>
 
             <button className="nav-item">
               <span>⚙</span>
               Settings
             </button>
+
           </div>
 
         </nav>
@@ -181,12 +275,21 @@ function App() {
         <div className="sidebar-bottom">
 
           <div className="user-info">
-            <div className="avatar">U</div>
+
+            <div className="avatar">
+              U
+            </div>
 
             <div>
-              <strong>Inventory Manager</strong>
-              <small>Administrator</small>
+              <strong>
+                Inventory Manager
+              </strong>
+
+              <small>
+                Administrator
+              </small>
             </div>
+
           </div>
 
           <button className="logout-button">
@@ -203,17 +306,26 @@ function App() {
         <header className="topbar">
 
           <div>
+
             <p className="breadcrumb">
-              {activePage === "Products" ? "Inventory" : "Overview"}
+              {activePage === "Products"
+                ? "Inventory"
+                : "Overview"}
             </p>
 
             <h1>
-              {activePage === "Products" ? "Products" : "Dashboard"}
+              {activePage === "Products"
+                ? "Products"
+                : "Dashboard"}
             </h1>
+
           </div>
 
           <div className="warehouse">
-            <span>Warehouse</span>
+
+            <span>
+              Warehouse
+            </span>
 
             <select
               value={selectedWarehouse}
@@ -233,6 +345,7 @@ function App() {
                 Warehouse 3
               </option>
             </select>
+
           </div>
 
         </header>
@@ -245,6 +358,7 @@ function App() {
             <div className="page-header">
 
               <div>
+
                 <p className="eyebrow">
                   INVENTORY
                 </p>
@@ -256,17 +370,29 @@ function App() {
                 <p>
                   View and manage your inventory products.
                 </p>
+
               </div>
 
-              <input
-                type="text"
-                className="product-search"
-                placeholder="Search products..."
-                value={productSearch}
-                onChange={(event) =>
-                  setProductSearch(event.target.value)
-                }
-              />
+              <div className="products-actions">
+
+                <input
+                  type="text"
+                  className="product-search"
+                  placeholder="Search products..."
+                  value={productSearch}
+                  onChange={(event) =>
+                    setProductSearch(event.target.value)
+                  }
+                />
+
+                <button
+                  className="add-product-button"
+                  onClick={() => setShowAddProduct(true)}
+                >
+                  + Add Product
+                </button>
+
+              </div>
 
             </div>
 
@@ -275,11 +401,27 @@ function App() {
               <div className="products-table">
 
                 <div className="product-row product-header">
-                  <span>Product</span>
-                  <span>SKU</span>
-                  <span>Category</span>
-                  <span>Stock</span>
-                  <span>Status</span>
+
+                  <span>
+                    Product
+                  </span>
+
+                  <span>
+                    SKU
+                  </span>
+
+                  <span>
+                    Category
+                  </span>
+
+                  <span>
+                    Stock
+                  </span>
+
+                  <span>
+                    Status
+                  </span>
+
                 </div>
 
                 {filteredProducts.map(product => (
@@ -322,15 +464,20 @@ function App() {
                 ))}
 
                 {filteredProducts.length === 0 && (
+
                   <div className="empty-state">
+
                     <h4>
                       No products found
                     </h4>
 
                     <p>
-                      Try searching for a different product, SKU, or category.
+                      Try searching for a different product,
+                      SKU, or category.
                     </p>
+
                   </div>
+
                 )}
 
               </div>
@@ -348,6 +495,7 @@ function App() {
             <div className="welcome">
 
               <div>
+
                 <p className="eyebrow">
                   INVENTORY OVERVIEW
                 </p>
@@ -357,9 +505,10 @@ function App() {
                 </h2>
 
                 <p>
-                  Monitor your inventory, stock movements and warehouse
-                  operations from one place.
+                  Monitor your inventory, stock movements and
+                  warehouse operations from one place.
                 </p>
+
               </div>
 
             </div>
@@ -368,6 +517,7 @@ function App() {
             <div className="stats-grid">
 
               <div className="stat-card">
+
                 <span className="stat-label">
                   Total Products
                 </span>
@@ -379,9 +529,11 @@ function App() {
                 <small>
                   Products in inventory
                 </small>
+
               </div>
 
               <div className="stat-card">
+
                 <span className="stat-label">
                   Total Stock
                 </span>
@@ -393,9 +545,11 @@ function App() {
                 <small>
                   Units available
                 </small>
+
               </div>
 
               <div className="stat-card">
+
                 <span className="stat-label">
                   Low Stock
                 </span>
@@ -407,9 +561,11 @@ function App() {
                 <small>
                   Products need attention
                 </small>
+
               </div>
 
               <div className="stat-card">
+
                 <span className="stat-label">
                   Stock Movements
                 </span>
@@ -421,6 +577,7 @@ function App() {
                 <small>
                   Recent movements
                 </small>
+
               </div>
 
             </div>
@@ -434,6 +591,7 @@ function App() {
                 <div className="panel-header">
 
                   <div>
+
                     <p className="eyebrow">
                       RECENT ACTIVITY
                     </p>
@@ -441,6 +599,7 @@ function App() {
                     <h3>
                       Recent Stock Movements
                     </h3>
+
                   </div>
 
                   <button className="view-button">
@@ -495,6 +654,7 @@ function App() {
                 <div className="panel-header">
 
                   <div>
+
                     <p className="eyebrow">
                       ALERTS
                     </p>
@@ -502,6 +662,7 @@ function App() {
                     <h3>
                       Low Stock
                     </h3>
+
                   </div>
 
                 </div>
@@ -546,6 +707,177 @@ function App() {
         )}
 
       </main>
+
+      {/* Add Product Modal */}
+      {showAddProduct && (
+
+        <div
+          className="modal-overlay"
+          onClick={handleCancelAddProduct}
+        >
+
+          <div
+            className="product-modal"
+            onClick={(event) => event.stopPropagation()}
+          >
+
+            <div className="modal-header">
+
+              <div>
+
+                <p className="eyebrow">
+                  INVENTORY
+                </p>
+
+                <h2>
+                  Add Product
+                </h2>
+
+              </div>
+
+              <button
+                className="modal-close"
+                onClick={handleCancelAddProduct}
+              >
+                ×
+              </button>
+
+            </div>
+
+            <form onSubmit={handleAddProduct}>
+
+              <div className="form-group">
+
+                <label>
+                  Product Name
+                </label>
+
+                <input
+                  type="text"
+                  placeholder="e.g. Wireless Headphones"
+                  value={newProduct.name}
+                  onChange={(event) =>
+                    setNewProduct({
+                      ...newProduct,
+                      name: event.target.value
+                    })
+                  }
+                />
+
+              </div>
+
+              <div className="form-group">
+
+                <label>
+                  SKU
+                </label>
+
+                <input
+                  type="text"
+                  placeholder="e.g. WH-006"
+                  value={newProduct.sku}
+                  onChange={(event) =>
+                    setNewProduct({
+                      ...newProduct,
+                      sku: event.target.value
+                    })
+                  }
+                />
+
+              </div>
+
+              <div className="form-group">
+
+                <label>
+                  Category
+                </label>
+
+                <input
+                  type="text"
+                  placeholder="e.g. Electronics"
+                  value={newProduct.category}
+                  onChange={(event) =>
+                    setNewProduct({
+                      ...newProduct,
+                      category: event.target.value
+                    })
+                  }
+                />
+
+              </div>
+
+              <div className="form-row">
+
+                <div className="form-group">
+
+                  <label>
+                    Stock Quantity
+                  </label>
+
+                  <input
+                    type="number"
+                    min="0"
+                    placeholder="0"
+                    value={newProduct.stock}
+                    onChange={(event) =>
+                      setNewProduct({
+                        ...newProduct,
+                        stock: event.target.value
+                      })
+                    }
+                  />
+
+                </div>
+
+                <div className="form-group">
+
+                  <label>
+                    Reorder Level
+                  </label>
+
+                  <input
+                    type="number"
+                    min="0"
+                    placeholder="0"
+                    value={newProduct.reorderLevel}
+                    onChange={(event) =>
+                      setNewProduct({
+                        ...newProduct,
+                        reorderLevel: event.target.value
+                      })
+                    }
+                  />
+
+                </div>
+
+              </div>
+
+              <div className="modal-actions">
+
+                <button
+                  type="button"
+                  className="cancel-button"
+                  onClick={handleCancelAddProduct}
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="submit"
+                  className="add-product-button"
+                >
+                  Add Product
+                </button>
+
+              </div>
+
+            </form>
+
+          </div>
+
+        </div>
+
+      )}
 
     </div>
   )
